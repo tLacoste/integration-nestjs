@@ -14,7 +14,7 @@
 - Tester l'application sur le playground GraphQL à l'adresse [http://localhost:3000/graphql][playground]
 - Parcourir la [documentation NestJs](https://docs.nestjs.com)
 - Executer les tests e2e
-- Cloner ce repository sur un respotiroy github qui pourra être accessible en public
+- Cloner ce repository sur un repository github qui pourra être accessible en public
 - Effectuer les modifications nécessaires pour répondre aux [problèmes mentionnés](#travail-à-effectuer)
 - A chaque question, effectuer un `commit` sur le repository public
 
