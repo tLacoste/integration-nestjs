@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, FindOptionsWhere, In, Repository } from 'typeorm';
-import { EmailFiltersArgs } from './email.types';
+import { EmailFiltersArgs, StringFilters } from './email.types';
 import { EmailId, IEmail } from './email.interfaces';
 import { EmailEntity } from './email.entity';
+import { Maybe } from 'graphql/jsutils/Maybe';
 
 @Injectable()
 export class EmailService {
@@ -27,7 +28,7 @@ export class EmailService {
    * @param options 
    * @returns 
    */
-  getEmails(filters: EmailFiltersArgs): Promise<IEmail[]> {
+  getEmails(filters: EmailFiltersArgs, userFilter?: Maybe<Pick<StringFilters, 'equal'>>): Promise<IEmail[]> {
     const where: FindOptionsWhere<EmailEntity> = {};
 
     // Gestion des filtres pour les adresses
@@ -37,6 +38,11 @@ export class EmailService {
     }
     if(addressList.length > 0){
         where.address = In(addressList);
+    }
+
+    // Gestion des filtres pour l'utilisateur
+    if(userFilter?.equal){
+      where.userId = Equal(userFilter.equal);
     }
     
     return this.emailRepository.find({

@@ -14,13 +14,13 @@ import { EmailEntity } from '../email/email.entity';
 import { UserId } from './user.interfaces';
 import { UserService } from './user.service';
 import { AddUser, User, UserIdArgs } from './user.types';
+import { EmailService } from '../email/email.service';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly _service: UserService,
-    @InjectRepository(EmailEntity)
-    private readonly emailRepository: Repository<EmailEntity>,
+    private readonly _emailService: EmailService
   ) {}
 
   @Query(() => User, { name: 'user', nullable: true })
@@ -43,27 +43,6 @@ export class UserResolver {
     @Parent() user: User,
     @Args() filters: EmailFiltersArgs,
   ): Promise<UserEmail[]> {
-    const where: FindOptionsWhere<EmailEntity>[] = [];
-
-    if (filters.address) {
-      if (filters.address.equal) {
-        where.push({
-          userId: Equal(user.id),
-          address: Equal(filters.address.equal)
-        });
-      }
-
-      if (filters.address.in?.length > 0) {
-        where.push({
-          userId: Equal(user.id),
-          address: In(filters.address.in)
-        });
-      }
-    }
-
-    return this.emailRepository.find({
-      where,
-      order: { address: 'asc' },
-    });
+    return this._emailService.getEmails(filters, { equal: user.id });
   }
 }

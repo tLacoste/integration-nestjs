@@ -25,14 +25,11 @@ export class EmailResolver {
 
   @Query(() => [UserEmail], { name: 'emailsList' })
   async getEmails(@Args() filters: EmailFiltersArgs): Promise<UserEmail[]> {
-    // TODO REFACTORISATION
-    // Je pense qu'on pourrait essayer de refactoriser pour réutiliser
-    // la même chose que dans UserResolver pour récupérer les emails
     return this._service.getEmails(filters);
   }
 
   @ResolveField(() => User, { name: 'user' })
-  async getUser(@Parent() parent: UserEmail): Promise<User> {
-    return this._userService.get(parent.userId);
+  async getUser(@Parent() user: UserEmail): Promise<User> {
+    return this._userService.get(user.userId);
   }
 }
