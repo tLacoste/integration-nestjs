@@ -216,7 +216,7 @@ describe('Tests e2e', () => {
 
   describe('EmailResolver', () => {
     describe('[Query] email', () => {
-      it.skip(`[10] Devrait retourner l'email connu en base de données`, () => {
+      it(`[10] Devrait retourner l'email connu en base de données`, () => {
         const { userId, ...email } = email3;
 
         return request(app.getHttpServer())
@@ -233,7 +233,7 @@ describe('Tests e2e', () => {
     });
 
     describe('[Query] emailsList', () => {
-      it.skip(`[11] Devrait retourner les emails correspondants aux filtres`, () => {
+      it(`[11] Devrait retourner les emails correspondants aux filtres`, () => {
         const { userId, ...email } = email2;
 
         return request(app.getHttpServer())
@@ -250,7 +250,7 @@ describe('Tests e2e', () => {
     });
 
     describe('[FieldResolver] user', () => {
-      it.skip(`[12] Devrait retourner l'utilisateur de l'email`, () => {
+      it(`[12] Devrait retourner l'utilisateur de l'email`, () => {
         return request(app.getHttpServer())
           .post('/graphql')
           .send({

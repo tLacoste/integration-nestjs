@@ -8,6 +8,7 @@ import { UserEntity } from './user/user.entity';
 import { config } from 'dotenv';
 import { EmailResolver } from './email/email.resolver';
 import { EmailEntity } from './email/email.entity';
+import { EmailService } from './email/email.service';
 
 config({});
 
@@ -29,6 +30,6 @@ config({});
       autoSchemaFile: true,
     }),
   ],
-  providers: [UserResolver, EmailResolver, UserService],
+  providers: [UserResolver, EmailResolver, UserService, EmailService],
 })
 export class AppModule {}
