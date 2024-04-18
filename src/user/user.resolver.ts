@@ -38,7 +38,7 @@ export class UserResolver {
     return this._service.deactivate(userId);
   }
 
-  @ResolveField(() => UserEmail, { name: 'emails' })
+  @ResolveField(() => [UserEmail], { name: 'emails' })
   async getEmails(
     @Parent() user: User,
     @Args() filters: EmailFiltersArgs,

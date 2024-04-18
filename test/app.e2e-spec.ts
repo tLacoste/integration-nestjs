@@ -88,7 +88,7 @@ describe('Tests e2e', () => {
           });
       });
 
-      it.skip(`[02] Devrait pouvoir résoudre les e-mails de l'utilisateur`, () => {
+      it(`[02] Devrait pouvoir résoudre les e-mails de l'utilisateur`, () => {
         return request(app.getHttpServer())
           .post('/graphql')
           .send({
@@ -103,7 +103,7 @@ describe('Tests e2e', () => {
           });
       });
 
-      it.skip(`[03] Devrait pouvoir résoudre les e-mails avec les filtres`, () => {
+      it(`[03] Devrait pouvoir résoudre les e-mails avec les filtres`, () => {
         const { userId, ...email } = email1;
         const knownUser = {
           id: knownUserId,
