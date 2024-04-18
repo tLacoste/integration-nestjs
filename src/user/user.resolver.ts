@@ -43,17 +43,21 @@ export class UserResolver {
     @Parent() user: User,
     @Args() filters: EmailFiltersArgs,
   ): Promise<UserEmail[]> {
-    const where: FindOptionsWhere<EmailEntity> = {
-      userId: Equal(user.id),
-    };
+    const where: FindOptionsWhere<EmailEntity>[] = [];
 
     if (filters.address) {
       if (filters.address.equal) {
-        where.address = Equal(filters.address.equal);
+        where.push({
+          userId: Equal(user.id),
+          address: Equal(filters.address.equal)
+        });
       }
 
       if (filters.address.in?.length > 0) {
-        where.address = In(filters.address.in);
+        where.push({
+          userId: Equal(user.id),
+          address: In(filters.address.in)
+        });
       }
     }
 

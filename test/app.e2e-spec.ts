@@ -149,7 +149,7 @@ describe('Tests e2e', () => {
           });
       });
 
-      it.skip(`[06] Devrait retourner les emails égaux tout comme les emails contenus`, () => {
+      it(`[06] Devrait retourner les emails égaux tout comme les emails contenus`, () => {
         return request(app.getHttpServer())
           .post('/graphql')
           .send({
