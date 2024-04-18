@@ -181,7 +181,7 @@ describe('Tests e2e', () => {
           });
       });
 
-      it.skip(`[08] Devrait retourner une erreur de validation si le nom n'est pas défini`, () => {
+      it(`[08] Devrait retourner une erreur de validation si le nom n'est pas défini`, () => {
         return request(app.getHttpServer())
           .post('/graphql')
           .send({
@@ -195,7 +195,7 @@ describe('Tests e2e', () => {
           });
       });
 
-      it.skip(`[09] Devrait retourner une erreur de validation si la date de naissance est définie dans le future`, () => {
+      it(`[09] Devrait retourner une erreur de validation si la date de naissance est définie dans le future`, () => {
         const date = new Date(2050, 1, 1).toISOString();
         return request(app.getHttpServer())
           .post('/graphql')
