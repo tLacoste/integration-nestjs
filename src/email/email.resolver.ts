@@ -12,6 +12,7 @@ import { User } from '../user/user.types';
 import { EmailId } from './email.interfaces';
 import { EmailService } from './email.service';
 import { AddEmail, EmailFiltersArgs, EmailIdArgs, UserEmail } from './email.types';
+import { NotFoundException } from '@nestjs/common';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
@@ -38,6 +39,10 @@ export class EmailResolver {
 
   @Mutation(() => ID)
   async addEmail(@Args() email: AddEmail): Promise<EmailId> {
+    const user = await this._userService.get(email.userId);
+    if(user.status !== "active"){
+      throw new NotFoundException("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+    }
     return this._service.add(email);
   }
 }
