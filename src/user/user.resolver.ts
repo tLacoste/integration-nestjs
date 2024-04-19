@@ -24,17 +24,17 @@ export class UserResolver {
   ) {}
 
   @Query(() => User, { name: 'user', nullable: true })
-  getUser(@Args() { userId }: UserIdArgs): Promise<User> {
+  async getUser(@Args() { userId }: UserIdArgs): Promise<User> {
     return this._service.get(userId);
   }
 
   @Mutation(() => ID)
-  addUser(@Args() user: AddUser): Promise<UserId> {
+  async addUser(@Args() user: AddUser): Promise<UserId> {
     return this._service.add(user);
   }
 
   @Mutation(() => ID)
-  deactivateUser(@Args() { userId }: UserIdArgs): Promise<UserId> {
+  async deactivateUser(@Args() { userId }: UserIdArgs): Promise<UserId> {
     return this._service.deactivate(userId);
   }
 
