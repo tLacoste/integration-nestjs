@@ -1,17 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, FindOptionsWhere, In, Repository } from 'typeorm';
-import { EmailFiltersArgs, StringFilters } from './email.types';
-import { EmailId, IEmail } from './email.interfaces';
-import { EmailEntity } from './email.entity';
 import { Maybe } from 'graphql/jsutils/Maybe';
+import { Equal, FindOptionsWhere, In, Repository } from 'typeorm';
+import { EmailEntity } from './email.entity';
+import { EmailId, IAddEmail, IEmail } from './email.interfaces';
+import { EmailFiltersArgs, StringFilters } from './email.types';
 
 @Injectable()
 export class EmailService {
   constructor(
     @InjectRepository(EmailEntity)
-    private readonly emailRepository: Repository<EmailEntity>,
+    private readonly emailRepository: Repository<EmailEntity>
   ) {}
+
+  /**
+   * Ajoute un email
+   * @param email Email à ajouter au système
+   */
+  async add(email: IAddEmail) {
+    const addedEmail = await this.emailRepository.insert(email);
+    const emailId = addedEmail.identifiers[0].id;
+
+    return emailId;
+  }
 
   /**
      * Récupère un email par rapport à un identifiant

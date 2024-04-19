@@ -4,6 +4,8 @@ export type IEmail = {
   userId: string;
 };
 
+export type IAddEmail = Omit<IEmail, 'id'>;
+
 export type EmailId = IEmail['id'];
 
 export type IEmailFilters = {

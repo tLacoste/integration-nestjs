@@ -6,13 +6,16 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../src/user/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EmailEntity } from '../src/email/email.entity';
+import { UserStatus } from '../src/user/user.interfaces';
+import { useContainer } from 'class-validator';
 
 const knownUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8b';
+const knownInactiveUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8c';
 
 const knownUser = {
   id: knownUserId,
   name: 'Moi Même',
-  status: 'active',
+  status: "active" as UserStatus,
   birthdate: new Date(1989, 3, 8).toISOString(),
   emails: [
     {
@@ -32,6 +35,30 @@ const knownUser = {
     },
   ],
 };
+
+const knownInactiveUser = {
+  id: knownInactiveUserId,
+  name: 'Moi Même',
+  status: "inactive" as UserStatus,
+  birthdate: new Date(1989, 3, 8).toISOString(),
+  emails: [
+    {
+      userId: knownInactiveUserId,
+      id: 'f7176922-9ae8-4ac7-b1d9-d6b8ed75475c',
+      address: 'test1@upcse-integration.coop',
+    },
+    {
+      userId: knownInactiveUserId,
+      id: 'f6035e0a-25b4-40a9-818d-cb7420495d27',
+      address: 'test2@upcse-integration.coop',
+    },
+    {
+      userId: knownInactiveUserId,
+      id: '1983ee1f-e64e-4dfd-9a28-ee4827d68994',
+      address: 'test3@upcse-integration.coop',
+    },
+  ],
+}
 
 const [email1, email2, email3] = knownUser.emails;
 
@@ -59,6 +86,10 @@ describe('Tests e2e', () => {
     const { emails, ...user } = knownUser;
     await userRepo.insert(user);
     await emailRepo.insert(emails);
+    
+    const { emails: inactiveEmails, ...inactiveUser } = knownInactiveUser;
+    await userRepo.insert(inactiveUser);
+    await emailRepo.insert(inactiveEmails);
 
     await app.init();
   });
@@ -260,6 +291,76 @@ describe('Tests e2e', () => {
           .expect((res) => {
             expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
             expect(res.body.data?.emailsList[0].user.id).toBe(knownUserId);
+          });
+      });
+    });
+
+    describe('[Mutation] addEmail', () => {
+      it(`Devrait ajouter un email`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {addEmail(address: "active@test.fr", userId: "${knownUserId}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.data.addEmail).toBeDefined();
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'adresse email n'est pas définie`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {addEmail(address: "", userId: "${knownUserId}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0].extensions?.originalError?.message,
+            ).toContain("L'adresse email n'est pas définie");
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'adresse email n'est pas valide`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {addEmail(address: "", userId: "${knownUserId}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0].extensions?.originalError?.message,
+            ).toContain("L'adresse email est invalide");
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'identifiant d'utilisateur n'est pas défini`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {addEmail(address: "active2@test.fr", userId: "")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0].extensions?.originalError?.message,
+            ).toContain("L'identifiant d'utilisateur doit être défini");
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'utilisateur associé à l'identifiant est inactif`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {addEmail(address: "inactive@test.fr", userId: "${knownInactiveUserId}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0].extensions?.originalError?.message,
+            ).toContain("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
           });
       });
     });

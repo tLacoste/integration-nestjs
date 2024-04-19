@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { IAddUser, IUser, UserId } from './user.interfaces';
+import { IAddUser, IUser, UserId, UserStatus } from './user.interfaces';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
   async add(user: IAddUser) {
     const addedUser = await this.userRepository.insert({
       ...user,
-      status: 'active',
+      status: "active",
     });
     const userId = addedUser.identifiers[0].id;
 
@@ -41,7 +41,7 @@ export class UserService {
 
     await this.userRepository.update(
       { id: Equal(userId) },
-      { status: 'inactive' },
+      { status: "inactive" },
     );
 
     return userId;
