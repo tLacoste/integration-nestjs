@@ -114,7 +114,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data.user).toStrictEqual(user);
+            expect(res.body.data?.user).toStrictEqual(user);
           });
       });
 
@@ -129,7 +129,7 @@ describe('Tests e2e', () => {
             expect(res.body.errors?.[0]?.message).not.toBe(
               'Cannot return null for non-nullable field UserEmail.id.',
             );
-            expect(res.body.data.user.emails.length).toBe(3);
+            expect(res.body.data?.user?.emails?.length).toBe(3);
           });
       });
 
@@ -147,7 +147,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data.user).toStrictEqual(knownUser);
+            expect(res.body.data?.user).toStrictEqual(knownUser);
           });
       });
 
@@ -160,7 +160,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'identifiant de l'utilisateur doit être défini");
           });
       });
@@ -191,7 +191,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data.user.emails.length).toBe(3);
+            expect(res.body?.data?.user?.emails?.length).toBe(3);
           });
       });
     });
@@ -207,7 +207,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data.addUser).toBeDefined();
+            expect(res.body.data?.addUser).toBeDefined();
           });
       });
 
@@ -274,7 +274,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
-            expect(res.body.data?.emailsList[0]).toStrictEqual(email);
+            expect(res.body.data?.emailsList?.[0]).toStrictEqual(email);
           });
       });
     });
@@ -289,7 +289,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
-            expect(res.body.data?.emailsList[0].user.id).toBe(knownUserId);
+            expect(res.body.data?.emailsList[0]?.user?.id).toBe(knownUserId);
           });
       });
     });
@@ -316,7 +316,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'adresse email n'est pas définie");
           });
       });
@@ -330,7 +330,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'adresse email est invalide");
           });
       });
@@ -344,7 +344,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'identifiant d'utilisateur doit être défini");
           });
       });
@@ -358,8 +358,65 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+          });
+      });
+    });
+
+    describe('[Mutation] deleteEmail', () => {
+      it(`Devrait supprimer un email`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {deleteEmail(emailId: "${email1.id}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            console.log(JSON.stringify(res.body));
+            expect(res.body.data?.deleteEmail).toBeDefined();
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'identifiant d'email n'est pas défini`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {deleteEmail(emailId: "")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0]?.extensions?.originalError?.message,
+            ).toContain("L'identifiant de l'email doit être défini");
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'identifiant d'email n'est pas un UUID`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {deleteEmail(emailId: "NotAnUUID")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0]?.extensions?.originalError?.message,
+            ).toContain("L'identifiant de l'email doit être un UUID");
+          });
+      });
+
+      it(`Devrait retourner une erreur de validation si l'utilisateur associé à l'email est inactif`, () => {
+        return request(app.getHttpServer())
+          .post('/graphql')
+          .send({
+            query: `mutation {deleteEmail(emailId: "${knownInactiveUser.emails[0].id}")}`,
+          })
+          .expect(200)
+          .expect((res) => {
+            expect(
+              res.body.errors?.[0]?.extensions?.originalError?.message,
+            ).toContain("L'utilisateur associé à l'email doit être un utilisateur actif");
           });
       });
     });
