@@ -5,12 +5,15 @@ import { Equal, FindOptionsWhere, In, Repository } from 'typeorm';
 import { EmailEntity } from './email.entity';
 import { EmailId, IAddEmail, IEmail } from './email.interfaces';
 import { EmailFiltersArgs, StringFilters } from './email.types';
+import { UserService } from '../user/user.service';
+import { InvalidEmailError, InvalidUserError } from './email.errors';
 
 @Injectable()
 export class EmailService {
   constructor(
     @InjectRepository(EmailEntity)
-    private readonly emailRepository: Repository<EmailEntity>
+    private readonly emailRepository: Repository<EmailEntity>,
+    private readonly _userService: UserService
   ) {}
 
   /**
@@ -18,10 +21,34 @@ export class EmailService {
    * @param email Email à ajouter au système
    */
   async add(email: IAddEmail) {
+    const user = await this._userService.get(email.userId);
+    if(user.status !== "active"){
+      throw new InvalidUserError("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+    }
+
     const addedEmail = await this.emailRepository.insert(email);
     const emailId = addedEmail.identifiers[0].id;
 
     return emailId;
+  }
+
+  /**
+   * Supprime un email
+   * @param emailId L'identifiant de l'email à supprimer du système
+   */
+  async delete(emailId: EmailId) {
+    const email = await this.get(emailId);
+    if(!email){
+      throw new InvalidEmailError("L'identifiant de l'email est invalide");
+    }
+    const user = await this._userService.get(email.userId);
+    if(user.status !== "active"){
+      throw new InvalidEmailError("L'utilisateur associé à l'email doit être un utilisateur actif");
+    }
+
+    const removedEmail = await this.emailRepository.delete(emailId);
+    const removedId = removedEmail.affected ? emailId : null;
+    return removedId;
   }
 
   /**

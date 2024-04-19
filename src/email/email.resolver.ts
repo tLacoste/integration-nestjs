@@ -13,6 +13,7 @@ import { EmailId } from './email.interfaces';
 import { EmailService } from './email.service';
 import { AddEmail, EmailFiltersArgs, EmailIdArgs, UserEmail } from './email.types';
 import { NotFoundException } from '@nestjs/common';
+import { InvalidEmailError, InvalidUserError } from './email.errors';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
@@ -39,10 +40,25 @@ export class EmailResolver {
 
   @Mutation(() => ID)
   async addEmail(@Args() email: AddEmail): Promise<EmailId> {
-    const user = await this._userService.get(email.userId);
-    if(user.status !== "active"){
-      throw new NotFoundException("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+    try{
+      return await this._service.add(email);
+    }catch(error){
+      if(error instanceof InvalidUserError){
+        throw new NotFoundException(error.message);
+      }
+      throw error;
     }
-    return this._service.add(email);
+  }
+
+  @Mutation(() => ID)
+  async deleteEmail(@Args() { emailId }: EmailIdArgs): Promise<EmailId> {
+    try{
+      return await this._service.delete(emailId);
+    }catch(error){
+      if(error instanceof InvalidEmailError){
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 }

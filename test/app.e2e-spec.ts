@@ -414,6 +414,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
+            console.log(JSON.stringify(res));
             expect(
               res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain("L'utilisateur associé à l'email doit être un utilisateur actif");
