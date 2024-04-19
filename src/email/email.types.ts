@@ -2,6 +2,7 @@ import { ArgsType, Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { IsEmail, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { IAddEmail, IEmail, IEmailFilters } from './email.interfaces';
+import { IsActiveUser } from '../user/user.validators';
 
 @ObjectType()
 export class UserEmail implements IEmail {
@@ -58,6 +59,7 @@ export class EmailFiltersArgs implements IEmailFilters {
  */
 @ArgsType()
 export class EmailIdArgs {
+  @IsActiveUser()
   @IsUUID('all', {
     message: `L'identifiant de l'email doit être un UUID`,
   })
