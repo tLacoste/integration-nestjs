@@ -7,7 +7,6 @@ import { UserEntity } from '../src/user/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EmailEntity } from '../src/email/email.entity';
 import { UserStatus } from '../src/user/user.interfaces';
-import { useContainer } from 'class-validator';
 
 const knownUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8b';
 const knownInactiveUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8c';
