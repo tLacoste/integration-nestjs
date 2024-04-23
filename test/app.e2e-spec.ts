@@ -7,7 +7,7 @@ import { UserEntity } from '../src/user/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EmailEntity } from '../src/email/email.entity';
 import { UserStatus } from '../src/user/user.interfaces';
-import { email1, email2, email3, knownInactiveUser, knownInactiveUserId, knownUser, knownUserId } from './spec-data';
+import { email1, email2, email3, knownInactiveUserRaw, knownInactiveUserId, knownUserRaw, knownUserId } from './spec-data';
 
 describe('Tests e2e', () => {
   let app: INestApplication;
@@ -30,11 +30,11 @@ describe('Tests e2e', () => {
       getRepositoryToken(EmailEntity),
     );
 
-    const { emails, ...user } = knownUser;
+    const { emails, ...user } = knownUserRaw;
     await userRepo.insert(user);
     await emailRepo.insert(emails);
     
-    const { emails: inactiveEmails, ...inactiveUser } = knownInactiveUser;
+    const { emails: inactiveEmails, ...inactiveUser } = knownInactiveUserRaw;
     await userRepo.insert(inactiveUser);
     await emailRepo.insert(inactiveEmails);
 
@@ -51,8 +51,8 @@ describe('Tests e2e', () => {
       it(`[01] Devrait retourner l'utilisateur connu en base de données`, () => {
         const user = {
           id: knownUserId,
-          name: knownUser.name,
-          birthdate: knownUser.birthdate,
+          name: knownUserRaw.name,
+          birthdate: knownUserRaw.birthdate,
         };
 
         return request(app.getHttpServer())
@@ -358,7 +358,7 @@ describe('Tests e2e', () => {
         return request(app.getHttpServer())
           .post('/graphql')
           .send({
-            query: `mutation {deleteEmail(emailId: "${knownInactiveUser.emails[0].id}")}`,
+            query: `mutation {deleteEmail(emailId: "${knownInactiveUserRaw.emails[0].id}")}`,
           })
           .expect(200)
           .expect((res) => {

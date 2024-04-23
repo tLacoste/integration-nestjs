@@ -6,7 +6,7 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { EmailEntity } from '../src/email/email.entity';
 import { UserEntity } from '../src/user/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { email2, inexistentUUID, knownInactiveUser, knownUser } from './spec-data';
+import { email2, inexistentUUID, knownInactiveUserRaw, knownUserRaw } from './spec-data';
 import { InvalidEmailError } from '../src/email/email.errors';
 
 const getError = async (call: () => unknown): Promise<Error> => {
@@ -43,11 +43,11 @@ describe('EmailService', () => {
           getRepositoryToken(EmailEntity),
         );
 
-        const { emails, ...user } = knownUser;
+        const { emails, ...user } = knownUserRaw;
         await userRepo.insert(user);
         await emailRepo.insert(emails);
     
-        const { emails: inactiveEmails, ...inactiveUser } = knownInactiveUser;
+        const { emails: inactiveEmails, ...inactiveUser } = knownInactiveUserRaw;
         await userRepo.insert(inactiveUser);
         await emailRepo.insert(inactiveEmails);
 
@@ -68,8 +68,8 @@ describe('EmailService', () => {
 
     describe('get', () => { 
         it(`Devrait retourner l'utilisateur connu en base de données`, async () => { 
-            expect(await emailService.get(knownUser.emails[0].id))
-            .toEqual(knownUser.emails[0]); 
+            expect(await emailService.get(knownUserRaw.emails[0].id))
+            .toEqual(knownUserRaw.emails[0]); 
         });
         it(`Devrait retourner une erreur si l'identifiant n'est pas défini`, async () => { 
             const error = await getError(async () => await emailService.get(""));
@@ -94,33 +94,33 @@ describe('EmailService', () => {
             expect(emails[0]).toEqual(email2); 
         });
         it(`Devrait retourner les emails correspondants au filtre 'in'`, async () => { 
-            let emails = await emailService.getEmails({address: {equal: "", in: knownUser.emails.map(email => email.address)}});
-            expect(emails).toHaveLength(knownUser.emails.length);
-            knownUser.emails.forEach((email, index) => {
+            let emails = await emailService.getEmails({address: {equal: "", in: knownUserRaw.emails.map(email => email.address)}});
+            expect(emails).toHaveLength(knownUserRaw.emails.length);
+            knownUserRaw.emails.forEach((email, index) => {
                 expect(emails[index]).toEqual(email); 
             });
         });
         it(`Devrait retourner les emails correspondants aux filtres 'equal' et 'in'`, async () => { 
-            let emails = await emailService.getEmails({address: {equal: knownInactiveUser.emails[0].address, in: knownUser.emails.map(email => email.address)}});
-            expect(emails).toHaveLength(knownUser.emails.length + 1);
-            expect(emails).toContainEqual(knownInactiveUser.emails[0]);  
-            knownUser.emails.forEach((email, index) => {
+            let emails = await emailService.getEmails({address: {equal: knownInactiveUserRaw.emails[0].address, in: knownUserRaw.emails.map(email => email.address)}});
+            expect(emails).toHaveLength(knownUserRaw.emails.length + 1);
+            expect(emails).toContainEqual(knownInactiveUserRaw.emails[0]);  
+            knownUserRaw.emails.forEach((email, index) => {
                 expect(emails).toContainEqual(email); 
             });
         });
         it(`Devrait retourner tous les emails`, async () => { 
             let emails = await emailService.getEmails({address: {equal: "", in: []}});
-            expect(emails).toHaveLength(knownInactiveUser.emails.length + knownUser.emails.length);
+            expect(emails).toHaveLength(knownInactiveUserRaw.emails.length + knownUserRaw.emails.length);
         });
     });
 
     describe('delete', () => { 
         it(`Devrait supprimer l'email connu en base de données`, async () => { 
-            expect(await emailService.delete(knownUser.emails[0].id))
-            .toEqual(knownUser.emails[0].id); 
+            expect(await emailService.delete(knownUserRaw.emails[0].id))
+            .toEqual(knownUserRaw.emails[0].id); 
         });
         it(`Devrait retourner une erreur si l'utilisateur associé est inactif`, async () => { 
-            const error = await getError(async () => await emailService.delete(knownInactiveUser.emails[0].id));
+            const error = await getError(async () => await emailService.delete(knownInactiveUserRaw.emails[0].id));
             expect(error).toBeInstanceOf(InvalidEmailError);
             expect(error.message).toBe(`L'utilisateur associé à l'email doit être un utilisateur actif`);
         });

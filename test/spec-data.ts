@@ -1,12 +1,19 @@
-import { UserStatus } from "../src/user/user.interfaces";
+import { IEmail } from "../src/email/email.interfaces";
+import { IUser, UserStatus } from "../src/user/user.interfaces";
+
+export type IUserRaw = Omit<IUser, 'birthdate' | 'emails'> & {
+  birthdate?: string | null;
+  emails: IEmailRaw[];
+}
+export type IEmailRaw = IEmail;
 
 export const knownUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8b';
 export const knownInactiveUserId = '0f9fcea9-f618-44e5-b182-0e3c83586f8c';
 
-export const knownUser = {
+export const knownUserRaw: IUserRaw = {
   id: knownUserId,
   name: 'Moi Même',
-  status: "active" as UserStatus,
+  status: "active",
   birthdate: new Date(1989, 3, 8).toISOString(),
   emails: [
     {
@@ -27,10 +34,10 @@ export const knownUser = {
   ],
 };
 
-export const knownInactiveUser = {
+export const knownInactiveUserRaw: IUserRaw = {
   id: knownInactiveUserId,
   name: 'Moi Même',
-  status: "inactive" as UserStatus,
+  status: "inactive",
   birthdate: new Date(1989, 3, 8).toISOString(),
   emails: [
     {
@@ -51,6 +58,6 @@ export const knownInactiveUser = {
   ],
 }
 
-export const [email1, email2, email3] = knownUser.emails;
+export const [email1, email2, email3] = knownUserRaw.emails;
 
 export const inexistentUUID = "00000000-0000-0000-0000-000000000000";
