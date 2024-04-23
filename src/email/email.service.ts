@@ -12,7 +12,7 @@ import { InvalidEmailError, InvalidUserError } from './email.errors';
 export class EmailService {
   constructor(
     @InjectRepository(EmailEntity)
-    private readonly emailRepository: Repository<EmailEntity>,
+    private readonly _emailRepository: Repository<EmailEntity>,
     private readonly _userService: UserService
   ) {}
 
@@ -26,7 +26,7 @@ export class EmailService {
       throw new InvalidUserError("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
     }
 
-    const addedEmail = await this.emailRepository.insert(email);
+    const addedEmail = await this._emailRepository.insert(email);
     const emailId = addedEmail.identifiers[0].id;
 
     return emailId;
@@ -46,7 +46,7 @@ export class EmailService {
       throw new InvalidEmailError("L'utilisateur associé à l'email doit être un utilisateur actif");
     }
 
-    const removedEmail = await this.emailRepository.delete(emailId);
+    const removedEmail = await this._emailRepository.delete(emailId);
     const removedId = removedEmail.affected ? emailId : null;
     return removedId;
   }
@@ -57,7 +57,7 @@ export class EmailService {
      * @returns L'email correspondant à l'identifiant ou undefined
      */
   get(id: EmailId): Promise<IEmail> {
-    return this.emailRepository.findOneBy({ id: Equal(id) });
+    return this._emailRepository.findOneBy({ id: Equal(id) });
   }
   
   /**
@@ -83,7 +83,7 @@ export class EmailService {
       where.userId = Equal(userFilter.equal);
     }
     
-    return this.emailRepository.find({
+    return this._emailRepository.find({
       where,
       order: { address: 'asc' },
     });

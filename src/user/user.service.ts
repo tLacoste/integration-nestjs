@@ -8,7 +8,7 @@ import { IAddUser, IUser, UserId, UserStatus } from './user.interfaces';
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly _userRepository: Repository<UserEntity>,
   ) {}
 
   /**
@@ -16,7 +16,7 @@ export class UserService {
    * @param user Utilisateur à ajouter au système
    */
   async add(user: IAddUser) {
-    const addedUser = await this.userRepository.insert({
+    const addedUser = await this._userRepository.insert({
       ...user,
       status: "active",
     });
@@ -32,14 +32,14 @@ export class UserService {
    * @returns L'identifiant de l'utilisateur désactivé
    */
   async deactivate(userId: UserId) {
-    const userExists = await this.userRepository.exist({
+    const userExists = await this._userRepository.exist({
       where: { id: Equal(userId) },
     });
     if (!userExists) {
       throw new NotFoundException(`L'utilisateur n'a pas été trouvé`);
     }
 
-    await this.userRepository.update(
+    await this._userRepository.update(
       { id: Equal(userId) },
       { status: "inactive" },
     );
@@ -53,6 +53,6 @@ export class UserService {
    * @returns L'utilisateur correspondant à l'identifiant ou undefined
    */
   async get(id: UserId): Promise<IUser> {
-    return this.userRepository.findOneBy({ id: Equal(id) });
+    return this._userRepository.findOneBy({ id: Equal(id) });
   }
 }

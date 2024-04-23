@@ -19,23 +19,23 @@ import { EmailService } from '../email/email.service';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
-    private readonly _service: UserService,
+    private readonly _userService: UserService,
     private readonly _emailService: EmailService
   ) {}
 
   @Query(() => User, { name: 'user', nullable: true })
   async getUser(@Args() { userId }: UserIdArgs): Promise<User> {
-    return this._service.get(userId);
+    return this._userService.get(userId);
   }
 
   @Mutation(() => ID)
   async addUser(@Args() user: AddUser): Promise<UserId> {
-    return this._service.add(user);
+    return this._userService.add(user);
   }
 
   @Mutation(() => ID)
   async deactivateUser(@Args() { userId }: UserIdArgs): Promise<UserId> {
-    return this._service.deactivate(userId);
+    return this._userService.deactivate(userId);
   }
 
   @ResolveField(() => [UserEmail], { name: 'emails' })

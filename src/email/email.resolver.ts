@@ -19,29 +19,29 @@ import { InvalidEmailError, InvalidUserError } from './email.errors';
 export class EmailResolver {
 
   constructor(
-    private readonly _service: EmailService,
+    private readonly _emailService: EmailService,
     private readonly _userService: UserService
   ) {}
 
   @Query(() => UserEmail, { name: 'email' })
   async getEmail(@Args() { emailId } : EmailIdArgs) {
-    return this._service.get(emailId);
+    return this._emailService.get(emailId);
   }
 
   @Query(() => [UserEmail], { name: 'emailsList' })
   async getEmails(@Args() filters: EmailFiltersArgs): Promise<UserEmail[]> {
-    return this._service.getEmails(filters);
+    return this._emailService.getEmails(filters);
   }
 
   @ResolveField(() => User, { name: 'user' })
-  async getUser(@Parent() user: UserEmail): Promise<User> {
-    return this._userService.get(user.userId);
+  async getUser(@Parent() userEmail: UserEmail): Promise<User> {
+    return this._userService.get(userEmail.userId);
   }
 
   @Mutation(() => ID)
   async addEmail(@Args() email: AddEmail): Promise<EmailId> {
     try{
-      return await this._service.add(email);
+      return await this._emailService.add(email);
     }catch(error){
       if(error instanceof InvalidUserError){
         throw new NotFoundException(error.message);
@@ -53,7 +53,7 @@ export class EmailResolver {
   @Mutation(() => ID)
   async deleteEmail(@Args() { emailId }: EmailIdArgs): Promise<EmailId> {
     try{
-      return await this._service.delete(emailId);
+      return await this._emailService.delete(emailId);
     }catch(error){
       if(error instanceof InvalidEmailError){
         throw new NotFoundException(error.message);
