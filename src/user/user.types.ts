@@ -1,4 +1,4 @@
-import { ArgsType, Field, ID, InputType, ObjectType } from '@nestjs/graphql';
+import { ArgsType, Field, HideField, ID, InputType, ObjectType } from '@nestjs/graphql';
 import {
   IsNotEmpty,
   IsOptional,
@@ -7,8 +7,8 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { IUser, IAddUser, UserStatus } from './user.interfaces';
-import { Exclude } from 'class-transformer';
+import { UserEmail } from '../email/email.types';
+import { IAddUser, IUser, UserStatus } from './user.interfaces';
 
 /**
  * Type de sortie GraphQL d'un utilisateur pour les récupérations
@@ -24,9 +24,11 @@ export class User implements IUser {
   @Field(() => Date, { nullable: true })
   birthdate?: Maybe<Date>;
 
-  @Exclude()
-  @Field(() => Date, { nullable: true })
+  @HideField()
   status: UserStatus;
+
+  @Field(() => [UserEmail])
+  emails: UserEmail[]
 }
 
 /**
