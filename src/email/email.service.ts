@@ -6,7 +6,7 @@ import { EmailEntity } from './email.entity';
 import { EmailId, IAddEmail, IEmail } from './email.interfaces';
 import { EmailFiltersArgs, StringFilters } from './email.types';
 import { UserService } from '../user/user.service';
-import { InvalidEmailError, InvalidUserError } from './email.errors';
+import { InactiveEmailError, InactiveEmailMessage, NotFoundEmailError, NotFoundEmailMessage } from './email.errors';
 
 @Injectable()
 export class EmailService {
@@ -21,9 +21,8 @@ export class EmailService {
    * @param email Email à ajouter au système
    */
   async add(email: IAddEmail) {
-    const user = await this._userService.get(email.userId);
-    if(user.status !== "active"){
-      throw new InvalidUserError("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+    if(!(await this._userService.isActive(email.userId))){
+      throw new InactiveEmailError(InactiveEmailMessage);
     }
 
     const addedEmail = await this._emailRepository.insert(email);
@@ -37,13 +36,10 @@ export class EmailService {
    * @param emailId L'identifiant de l'email à supprimer du système
    */
   async delete(emailId: EmailId) {
-    const email = await this.get(emailId);
-    if(!email){
-      throw new InvalidEmailError("L'identifiant de l'email est invalide");
-    }
-    const user = await this._userService.get(email.userId);
-    if(user.status !== "active"){
-      throw new InvalidEmailError("L'utilisateur associé à l'email doit être un utilisateur actif");
+    const email = await this.getOrThrow(emailId);
+
+    if(!(await this._userService.isActive(email.userId))){
+      throw new InactiveEmailError(InactiveEmailMessage);
     }
 
     const removedEmail = await this._emailRepository.delete(emailId);
@@ -58,6 +54,19 @@ export class EmailService {
      */
   get(id: EmailId): Promise<IEmail> {
     return this._emailRepository.findOneBy({ id: Equal(id) });
+  }
+
+  /**
+     * Récupère un email par rapport à un identifiant
+     * @param id Identifiant de l'email à récupérer
+     * @returns L'email correspondant à l'identifiant ou NotFoundEmailError
+     */
+  async getOrThrow(id: EmailId): Promise<IEmail> {
+    const email = await this.get(id);
+    if(!email){
+      throw new NotFoundEmailError(NotFoundEmailMessage);
+    }
+    return email;
   }
   
   /**

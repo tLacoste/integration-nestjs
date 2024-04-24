@@ -12,8 +12,9 @@ import { User } from '../user/user.types';
 import { EmailId } from './email.interfaces';
 import { EmailService } from './email.service';
 import { AddEmail, EmailFiltersArgs, EmailIdArgs, UserEmail } from './email.types';
-import { NotFoundException } from '@nestjs/common';
-import { InvalidEmailError, InvalidUserError } from './email.errors';
+import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { NotFoundUserError, UserError } from '../user/user.errors';
+import { EmailError, InactiveEmailError } from './email.errors';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
@@ -43,8 +44,8 @@ export class EmailResolver {
     try{
       return await this._emailService.add(email);
     }catch(error){
-      if(error instanceof InvalidUserError){
-        throw new NotFoundException(error.message);
+      if(error instanceof EmailError || error instanceof UserError){
+        throw new UnprocessableEntityException(error.message);
       }
       throw error;
     }
@@ -55,8 +56,8 @@ export class EmailResolver {
     try{
       return await this._emailService.delete(emailId);
     }catch(error){
-      if(error instanceof InvalidEmailError){
-        throw new NotFoundException(error.message);
+      if(error instanceof EmailError || error instanceof UserError){
+        throw new UnprocessableEntityException(error.message);
       }
       throw error;
     }

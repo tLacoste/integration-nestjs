@@ -8,6 +8,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EmailEntity } from '../src/email/email.entity';
 import { UserStatus } from '../src/user/user.interfaces';
 import { email1, email2, email3, knownInactiveUserRaw, knownInactiveUserId, knownUserRaw, knownUserId } from './spec-data';
+import { InactiveEmailMessage } from '../src/email/email.errors';
 
 describe('Tests e2e', () => {
   let app: INestApplication;
@@ -307,7 +308,7 @@ describe('Tests e2e', () => {
           .expect((res) => {
             expect(
               res.body.errors?.[0]?.extensions?.originalError?.message,
-            ).toContain("L'identifiant d'utilisateur doit correspondre à un utilisateur actif");
+            ).toContain(InactiveEmailMessage);
           });
       });
     });
@@ -365,7 +366,7 @@ describe('Tests e2e', () => {
             console.log(JSON.stringify(res));
             expect(
               res.body.errors?.[0]?.extensions?.originalError?.message,
-            ).toContain("L'utilisateur associé à l'email doit être un utilisateur actif");
+            ).toContain(InactiveEmailMessage);
           });
       });
     });
