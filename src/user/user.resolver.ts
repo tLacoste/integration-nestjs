@@ -24,22 +24,22 @@ export class UserResolver {
   ) {}
 
   @Query(() => User, { name: 'user', nullable: true })
-  async getUser(@Args() { userId }: UserIdArgs): Promise<User> {
+  getUser(@Args() { userId }: UserIdArgs): Promise<User> {
     return this._userService.get(userId);
   }
 
   @Mutation(() => ID)
-  async addUser(@Args() user: AddUser): Promise<UserId> {
+  addUser(@Args() user: AddUser): Promise<UserId> {
     return this._userService.add(user);
   }
 
   @Mutation(() => ID)
-  async deactivateUser(@Args() { userId }: UserIdArgs): Promise<UserId> {
+  deactivateUser(@Args() { userId }: UserIdArgs): Promise<UserId> {
     return this._userService.deactivate(userId);
   }
 
   @ResolveField(() => [UserEmail], { name: 'emails' })
-  async getEmails(
+  getEmails(
     @Parent() user: User,
     @Args() filters: EmailFiltersArgs,
   ): Promise<UserEmail[]> {

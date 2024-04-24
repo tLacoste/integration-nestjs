@@ -25,17 +25,17 @@ export class EmailResolver {
   ) {}
 
   @Query(() => UserEmail, { name: 'email' })
-  async getEmail(@Args() { emailId } : EmailIdArgs) {
+  getEmail(@Args() { emailId } : EmailIdArgs) {
     return this._emailService.get(emailId);
   }
 
   @Query(() => [UserEmail], { name: 'emailsList' })
-  async getEmails(@Args() filters: EmailFiltersArgs): Promise<UserEmail[]> {
+  getEmails(@Args() filters: EmailFiltersArgs): Promise<UserEmail[]> {
     return this._emailService.getEmails(filters);
   }
 
   @ResolveField(() => User, { name: 'user' })
-  async getUser(@Parent() userEmail: UserEmail): Promise<User> {
+  getUser(@Parent() userEmail: UserEmail): Promise<User> {
     return this._userService.get(userEmail.userId);
   }
 

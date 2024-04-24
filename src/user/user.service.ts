@@ -53,7 +53,7 @@ export class UserService {
    * @param id Identifiant de l'utilisateur à récupérer
    * @returns L'utilisateur correspondant à l'identifiant ou undefined
    */
-  async get(id: UserId): Promise<IUser> {
+  get(id: UserId): Promise<IUser> {
     return this._userRepository.findOneBy({ id: Equal(id) });
   }
   /**
