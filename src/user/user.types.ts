@@ -28,7 +28,7 @@ export class User implements IUser {
   status: UserStatus;
 
   @Field(() => [UserEmail])
-  emails: UserEmail[]
+  emails: UserEmail[];
 }
 
 /**
