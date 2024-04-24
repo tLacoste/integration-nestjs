@@ -322,7 +322,6 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            console.log(JSON.stringify(res.body));
             expect(res.body.data?.deleteEmail).toBeDefined();
           });
       });
@@ -363,7 +362,6 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            console.log(JSON.stringify(res));
             expect(
               res.body.errors?.[0]?.extensions?.originalError?.message,
             ).toContain(InactiveEmailMessage);
