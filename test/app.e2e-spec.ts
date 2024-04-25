@@ -8,7 +8,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EmailEntity } from '../src/email/email.entity';
 import { UserStatus } from '../src/user/user.interfaces';
 import { email1, email2, email3, knownInactiveUserRaw, knownInactiveUserId, knownUserRaw, knownUserId } from './spec-data';
-import { InactiveEmailMessage } from '../src/email/email.errors';
+import { InactiveUserMessage } from '../src/user/user.errors';
 
 describe('Tests e2e', () => {
   let app: INestApplication;
@@ -308,7 +308,7 @@ describe('Tests e2e', () => {
           .expect((res) => {
             expect(
               res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
-            ).toContain(InactiveEmailMessage);
+            ).toContain(InactiveUserMessage);
           });
       });
     });
@@ -364,7 +364,7 @@ describe('Tests e2e', () => {
           .expect((res) => {
             expect(
               res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
-            ).toContain(InactiveEmailMessage);
+            ).toContain(InactiveUserMessage);
           });
       });
     });

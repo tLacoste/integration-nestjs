@@ -6,7 +6,8 @@ import { EmailEntity } from './email.entity';
 import { EmailId, IAddEmail, IEmail } from './email.interfaces';
 import { EmailFiltersArgs, StringFilters } from './email.types';
 import { UserService } from '../user/user.service';
-import { InactiveEmailError, InactiveEmailMessage, NotFoundEmailError, NotFoundEmailMessage } from './email.errors';
+import { NotFoundEmailError, NotFoundEmailMessage } from './email.errors';
+import { MissingParameterError } from '../shared/shared.errors';
 
 @Injectable()
 export class EmailService {
@@ -21,9 +22,10 @@ export class EmailService {
    * @param email Email à ajouter au système
    */
   async add(email: IAddEmail): Promise<EmailId> {
-    if(!(await this._userService.isActive(email.userId))){
-      throw new InactiveEmailError(InactiveEmailMessage);
+    if(!email){
+      throw new MissingParameterError('email');
     }
+    await this._userService.isActiveOrThrow(email.userId);
 
     const addedEmail = await this._emailRepository.insert(email);
     const emailId = addedEmail.identifiers[0].id;
@@ -37,10 +39,7 @@ export class EmailService {
    */
   async delete(emailId: EmailId): Promise<EmailId> {
     const email = await this.getOrThrow(emailId);
-
-    if(!(await this._userService.isActive(email.userId))){
-      throw new InactiveEmailError(InactiveEmailMessage);
-    }
+    await this._userService.isActiveOrThrow(email.userId);
 
     const removedEmail = await this._emailRepository.delete(emailId);
     const removedId = removedEmail.affected ? emailId : null;

@@ -12,9 +12,11 @@ import { User } from '../user/user.types';
 import { EmailId } from './email.interfaces';
 import { EmailService } from './email.service';
 import { AddEmail, EmailFiltersArgs, EmailIdArgs, UserEmail } from './email.types';
-import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { NotFoundUserError, UserError } from '../user/user.errors';
 import { EmailError, InactiveEmailError } from './email.errors';
+import { AssertionError } from 'assert';
+import { MissingParameterError, TechnicalError } from '../shared/shared.errors';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
@@ -44,6 +46,10 @@ export class EmailResolver {
     try{
       return await this._emailService.add(email);
     }catch(error){
+      if(error instanceof TechnicalError){
+        // Masquage volontaire des informations de l'erreur, qui devrait être fait par un filtre
+        throw new BadRequestException("Une erreur est survenue");
+      }
       if(error instanceof EmailError || error instanceof UserError){
         throw new UnprocessableEntityException(error.message);
       }

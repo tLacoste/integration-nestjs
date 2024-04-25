@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AppModule } from '../src/app.module';
 import { EmailEntity } from '../src/email/email.entity';
-import { InactiveEmailError, InactiveEmailMessage, NotFoundEmailError, NotFoundEmailMessage } from '../src/email/email.errors';
+import { NotFoundEmailError, NotFoundEmailMessage } from '../src/email/email.errors';
 import { EmailService } from '../src/email/email.service';
 import { UserEntity } from '../src/user/user.entity';
 import { email2, inexistentUUID, knownInactiveUserId, knownInactiveUserRaw, knownUserId, knownUserRaw } from './spec-data';
@@ -14,6 +14,7 @@ import { InactiveUserError, InactiveUserMessage, NotFoundUserError, NotFoundUser
 import { createMock } from '@golevelup/ts-jest';
 import { IAddEmail } from '../src/email/email.interfaces';
 import { plainToInstance } from 'class-transformer';
+import { MissingParameterError } from '../src/shared/shared.errors';
 
 const getError = async (call: () => unknown): Promise<Error> => {
     try {
@@ -196,60 +197,70 @@ describe('EmailService', () => {
         }); 
     
         it(`Devrait ajouter un email`, async () => { 
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockResolvedValueOnce(true);
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockResolvedValueOnce(true);
             const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert').mockResolvedValueOnce({ identifiers: [{id: knownUserRaw.emails[0].id}], generatedMaps: [], raw: []});
 
             expect(await emailService.add(addEmail1)).toEqual(knownUserRaw.emails[0].id); 
             
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(insertEmailSpy).toHaveBeenCalledTimes(1);
+        });
+        it(`Devrait retourner une erreur si aucun objet email n'a été fourni`, async () => {
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow');
+            const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert');
+
+            const error = await getError(async () => await emailService.add(null));
+            
+            expect(error).toBeInstanceOf(MissingParameterError);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(0);
+            expect(insertEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'utilisateur associé est inactif`, async () => {
             addEmail1.userId = knownInactiveUserId;
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockResolvedValueOnce(false);
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockRejectedValueOnce(new InactiveUserError(InactiveUserMessage));
             const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert');
 
             const error = await getError(async () => await emailService.add(addEmail1));
             
-            expect(error).toBeInstanceOf(InactiveEmailError);
-            expect(error.message).toBe(InactiveEmailMessage);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(error).toBeInstanceOf(InactiveUserError);
+            expect(error.message).toBe(InactiveUserMessage);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(insertEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant de l'utilisateur n'est pas défini`, async () => { 
             addEmail1.userId = "";
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: ""`)));
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: ""`)));
             const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert');
 
             const error = await getError(async () => await emailService.add(addEmail1));
             
             expect(error).toBeInstanceOf(QueryFailedError);
             expect(error.message).toBe(`invalid input syntax for type uuid: ""`);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(insertEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant de l'utilisateur est invalide`, async () => { 
             addEmail1.userId = "NotAnUUID";
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: "NotAnUUID"`)));
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: "NotAnUUID"`)));
             const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert');
 
             const error = await getError(async () => await emailService.add(addEmail1));
             
             expect(error).toBeInstanceOf(QueryFailedError);
             expect(error.message).toBe(`invalid input syntax for type uuid: "NotAnUUID"`);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(insertEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant de l'utilisateur est inexitant`, async () => { 
             addEmail1.userId = inexistentUUID;
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockResolvedValueOnce(false);
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockRejectedValueOnce(new InactiveUserError(InactiveUserMessage));
             const insertEmailSpy = jest.spyOn(emailRepositoryMock, 'insert');
 
             const error = await getError(async () => await emailService.add(addEmail1));
 
-            expect(error).toBeInstanceOf(InactiveEmailError);
-            expect(error.message).toBe(InactiveEmailMessage);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(error).toBeInstanceOf(InactiveUserError);
+            expect(error.message).toBe(InactiveUserMessage);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(insertEmailSpy).toHaveBeenCalledTimes(0);
         });
     });
@@ -260,32 +271,32 @@ describe('EmailService', () => {
             var email = plainToInstance(EmailEntity, knownUserRaw.emails[0], {enableImplicitConversion: true});
 
             const getOrThrowEmailSpy = jest.spyOn(emailService, 'getOrThrow').mockResolvedValueOnce(email);
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockResolvedValueOnce(true);
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockResolvedValueOnce(true);
             const deleteEmailSpy = jest.spyOn(emailRepositoryMock, 'delete').mockResolvedValueOnce({raw: [], affected: 1});
 
             expect(await emailService.delete(email.id)).toEqual(email.id); 
             
             expect(getOrThrowEmailSpy).toHaveBeenCalledTimes(1);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(deleteEmailSpy).toHaveBeenCalledTimes(1);
         });
         it(`Devrait retourner une erreur si l'utilisateur associé est inactif`, async () => { 
             var email = plainToInstance(EmailEntity, knownInactiveUserRaw.emails[0], {enableImplicitConversion: true});
             const getOrThrowEmailSpy = jest.spyOn(emailService, 'getOrThrow').mockResolvedValueOnce(email);
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive').mockResolvedValueOnce(false);
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow').mockRejectedValueOnce(new InactiveUserError(InactiveUserMessage));
             const deleteEmailSpy = jest.spyOn(emailRepositoryMock, 'delete');
 
             const error = await getError(async () => await emailService.delete(email.id));
 
-            expect(error).toBeInstanceOf(InactiveEmailError);
-            expect(error.message).toBe(InactiveEmailMessage);
+            expect(error).toBeInstanceOf(InactiveUserError);
+            expect(error.message).toBe(InactiveUserMessage);
             expect(getOrThrowEmailSpy).toHaveBeenCalledTimes(1);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(1);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(1);
             expect(deleteEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant n'est pas défini`, async () => { 
             const getOrThrowEmailSpy = jest.spyOn(emailService, 'getOrThrow').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: ""`)));
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive');
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow');
             const deleteEmailSpy = jest.spyOn(emailRepositoryMock, 'delete');
 
             const error = await getError(async () => await emailService.delete(""));
@@ -293,12 +304,12 @@ describe('EmailService', () => {
             expect(error).toBeInstanceOf(QueryFailedError);
             expect(error.message).toBe(`invalid input syntax for type uuid: ""`);
             expect(getOrThrowEmailSpy).toHaveBeenCalledTimes(1);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(0);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(0);
             expect(deleteEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant est invalide`, async () => { 
             const getOrThrowEmailSpy = jest.spyOn(emailService, 'getOrThrow').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: "NotAnUUID"`)));
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive');
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow');
             const deleteEmailSpy = jest.spyOn(emailRepositoryMock, 'delete');
 
             const error = await getError(async () => await emailService.delete("NotAnUUID"));
@@ -306,12 +317,12 @@ describe('EmailService', () => {
             expect(error).toBeInstanceOf(QueryFailedError);
             expect(error.message).toBe(`invalid input syntax for type uuid: "NotAnUUID"`);
             expect(getOrThrowEmailSpy).toHaveBeenCalledTimes(1);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(0);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(0);
             expect(deleteEmailSpy).toHaveBeenCalledTimes(0);
         });
         it(`Devrait retourner une erreur si l'identifiant est inexitant`, async () => { 
             const getOrThrowEmailSpy = jest.spyOn(emailService, 'getOrThrow').mockRejectedValueOnce(new NotFoundEmailError(NotFoundEmailMessage));
-            const isActiveUserSpy = jest.spyOn(userServiceMock, 'isActive');
+            const isActiveOrThrowUserSpy = jest.spyOn(userServiceMock, 'isActiveOrThrow');
             const deleteEmailSpy = jest.spyOn(emailRepositoryMock, 'delete');
 
             const error = await getError(async () => await emailService.delete(inexistentUUID));
@@ -319,7 +330,7 @@ describe('EmailService', () => {
             expect(error).toBeInstanceOf(NotFoundEmailError);
             expect(error.message).toBe(NotFoundEmailMessage);
             expect(getOrThrowEmailSpy).toHaveBeenCalledTimes(1);
-            expect(isActiveUserSpy).toHaveBeenCalledTimes(0);
+            expect(isActiveOrThrowUserSpy).toHaveBeenCalledTimes(0);
             expect(deleteEmailSpy).toHaveBeenCalledTimes(0);
         });
     });
