@@ -63,7 +63,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data?.user).toStrictEqual(user);
+            expect(res.body.data ? res.body.data.user : null).toStrictEqual(user);
           });
       });
 
@@ -75,10 +75,10 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.errors?.[0]?.message).not.toBe(
+            expect(res.body.errors && res.body.errors[0] ? res.body.errors[0].message : null).not.toBe(
               'Cannot return null for non-nullable field UserEmail.id.',
             );
-            expect(res.body.data?.user?.emails?.length).toBe(3);
+            expect(res.body.data && res.body.data.user && res.body.data.user.emails ? res.body.data.user.emails.length : null).toBe(3);
           });
       });
 
@@ -96,7 +96,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data?.user).toStrictEqual(knownUser);
+            expect(res.body.data ? res.body.data.user : null).toStrictEqual(knownUser);
           });
       });
 
@@ -109,7 +109,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'identifiant de l'utilisateur doit être défini");
           });
       });
@@ -123,7 +123,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'identifiant de l'utilisateur doit être un UUID");
           });
       });
@@ -140,7 +140,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body?.data?.user?.emails?.length).toBe(3);
+            expect(res.body.data && res.body.data.user && res.body.data.user.emails ? res.body.data.user.emails.length : null).toBe(3);
           });
       });
     });
@@ -156,7 +156,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data?.addUser).toBeDefined();
+            expect(res.body.data ? res.body.data.addUser : null).toBeDefined();
           });
       });
 
@@ -169,7 +169,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0].extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("Le nom de l'utilisateur n'est pas défini");
           });
       });
@@ -184,7 +184,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain(
               'La date de naissance ne peut pas être définie dans le future',
             );
@@ -205,7 +205,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
+            expect(res.body.errors && res.body.errors[0] ? res.body.errors[0].message : null).not.toBe('Not Implemented');
             expect(res.body.data?.email).toStrictEqual(email);
           });
       });
@@ -222,7 +222,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
+            expect(res.body.errors && res.body.errors[0] ? res.body.errors[0].message : null).not.toBe('Not Implemented');
             expect(res.body.data?.emailsList?.[0]).toStrictEqual(email);
           });
       });
@@ -237,8 +237,8 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.errors?.[0]?.message).not.toBe('Not Implemented');
-            expect(res.body.data?.emailsList[0]?.user?.id).toBe(knownUserId);
+            expect(res.body.errors && res.body.errors[0] ? res.body.errors[0].message : null).not.toBe('Not Implemented');
+            expect(res.body.data && res.body.data.emailsList && res.body.data.emailsList[0] && res.body.data.emailsList[0].user ? res.body.data.emailsList[0].user.id : null).toBe(knownUserId);
           });
       });
     });
@@ -252,7 +252,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data.addEmail).toBeDefined();
+            expect(res.body.data ? res.body.data.addEmail : null).toBeDefined();
           });
       });
 
@@ -265,7 +265,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'adresse email n'est pas définie");
           });
       });
@@ -279,7 +279,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'adresse email est invalide");
           });
       });
@@ -293,7 +293,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'identifiant d'utilisateur doit être défini");
           });
       });
@@ -307,7 +307,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain(InactiveEmailMessage);
           });
       });
@@ -322,7 +322,7 @@ describe('Tests e2e', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.data?.deleteEmail).toBeDefined();
+            expect(res.body.data ? res.body.data.deleteEmail : null).toBeDefined();
           });
       });
 
@@ -335,7 +335,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'identifiant de l'email doit être défini");
           });
       });
@@ -349,7 +349,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain("L'identifiant de l'email doit être un UUID");
           });
       });
@@ -363,7 +363,7 @@ describe('Tests e2e', () => {
           .expect(200)
           .expect((res) => {
             expect(
-              res.body.errors?.[0]?.extensions?.originalError?.message,
+              res.body.errors && res.body.errors[0] && res.body.errors[0].extensions && res.body.errors[0].extensions.originalError ? res.body.errors[0].extensions.originalError.message : null,
             ).toContain(InactiveEmailMessage);
           });
       });
