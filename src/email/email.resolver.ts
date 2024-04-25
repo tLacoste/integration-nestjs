@@ -25,7 +25,7 @@ export class EmailResolver {
   ) {}
 
   @Query(() => UserEmail, { name: 'email' })
-  getEmail(@Args() { emailId } : EmailIdArgs) {
+  getEmail(@Args() { emailId } : EmailIdArgs): Promise<UserEmail> {
     return this._emailService.get(emailId);
   }
 

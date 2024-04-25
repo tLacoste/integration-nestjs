@@ -20,7 +20,7 @@ export class EmailService {
    * Ajoute un email
    * @param email Email à ajouter au système
    */
-  async add(email: IAddEmail) {
+  async add(email: IAddEmail): Promise<EmailId> {
     if(!(await this._userService.isActive(email.userId))){
       throw new InactiveEmailError(InactiveEmailMessage);
     }
@@ -35,7 +35,7 @@ export class EmailService {
    * Supprime un email
    * @param emailId L'identifiant de l'email à supprimer du système
    */
-  async delete(emailId: EmailId) {
+  async delete(emailId: EmailId): Promise<EmailId> {
     const email = await this.getOrThrow(emailId);
 
     if(!(await this._userService.isActive(email.userId))){

@@ -16,7 +16,7 @@ export class UserService {
    * Ajoute un utilisateur
    * @param user Utilisateur à ajouter au système
    */
-  async add(user: IAddUser) {
+  async add(user: IAddUser): Promise<UserId> {
     const addedUser = await this._userRepository.insert({
       ...user,
       status: "active",
@@ -32,7 +32,7 @@ export class UserService {
    * @param userId Identifiant de l'utilisateur à désactiver
    * @returns L'identifiant de l'utilisateur désactivé
    */
-  async deactivate(userId: UserId) {
+  async deactivate(userId: UserId): Promise<UserId> {
     const userExists = await this._userRepository.exist({
       where: { id: Equal(userId) },
     });
