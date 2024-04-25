@@ -10,7 +10,7 @@ import { UserEntity } from '../src/user/user.entity';
 import { email2, inexistentUUID, knownInactiveUserId, knownInactiveUserRaw, knownUserId, knownUserRaw } from './spec-data';
 import { UserService } from '../src/user/user.service';
 import { IUser } from '../src/user/user.interfaces';
-import { NotFoundUserError, NotFoundUserMessage } from '../src/user/user.errors';
+import { InactiveUserError, InactiveUserMessage, NotFoundUserError, NotFoundUserMessage } from '../src/user/user.errors';
 import { createMock } from '@golevelup/ts-jest';
 import { IEmail } from '../src/email/email.interfaces';
 import { plainToInstance } from 'class-transformer';
@@ -406,6 +406,52 @@ describe('UserService', () => {
             expect(error).toBeInstanceOf(QueryFailedError);
             expect(error.message).toBe(`invalid input syntax for type uuid: "NotAnUUID"`);
             expect(existSpy).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('isActiveOrThrow', () => { 
+        it(`Devrait retourner 'true' si l'utilisateur est actif`, async () => { 
+            const isActiveSpy = jest.spyOn(userService, 'isActive').mockResolvedValueOnce(true);
+
+            expect(await userService.isActiveOrThrow(knownUserId)).toEqual(true); 
+            
+            expect(isActiveSpy).toHaveBeenCalledTimes(1);
+        });
+        it(`Devrait retourner une erreur si l'utilisateur est inactif`, async () => {
+            const isActiveSpy = jest.spyOn(userService, 'isActive').mockResolvedValueOnce(false);
+
+            const error = await getError(async () => await userService.isActiveOrThrow(knownInactiveUserId));
+
+            expect(error).toBeInstanceOf(InactiveUserError);
+            expect(error.message).toBe(InactiveUserMessage);
+            expect(isActiveSpy).toHaveBeenCalledTimes(1);
+        });
+        it(`Devrait retourner une erreur si l'identifiant est inexitant`, async () => { 
+            const isActiveSpy = jest.spyOn(userService, 'isActive').mockResolvedValueOnce(false);
+
+            const error = await getError(async () => await userService.isActiveOrThrow(inexistentUUID));
+            
+            expect(error).toBeInstanceOf(InactiveUserError);
+            expect(error.message).toBe(InactiveUserMessage);
+            expect(isActiveSpy).toHaveBeenCalledTimes(1);
+        });
+        it(`Devrait retourner une erreur si l'identifiant n'est pas défini`, async () => {
+            const isActiveSpy = jest.spyOn(userService, 'isActive').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: ""`)));
+
+            const error = await getError(async () => await userService.isActiveOrThrow(""));
+
+            expect(error).toBeInstanceOf(QueryFailedError);
+            expect(error.message).toBe(`invalid input syntax for type uuid: ""`);
+            expect(isActiveSpy).toHaveBeenCalledTimes(1);
+        });
+        it(`Devrait retourner une erreur si l'identifiant est invalide`, async () => { 
+            const isActiveSpy = jest.spyOn(userService, 'isActive').mockRejectedValueOnce(new QueryFailedError(null, null, new Error(`invalid input syntax for type uuid: "NotAnUUID"`)));
+            
+            const error = await getError(async () => await userService.isActiveOrThrow("NotAnUUID"));
+            
+            expect(error).toBeInstanceOf(QueryFailedError);
+            expect(error.message).toBe(`invalid input syntax for type uuid: "NotAnUUID"`);
+            expect(isActiveSpy).toHaveBeenCalledTimes(1);
         });
     });
 });

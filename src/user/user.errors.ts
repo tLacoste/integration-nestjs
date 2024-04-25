@@ -11,4 +11,12 @@ export class NotFoundUserError extends UserError {
   }
 }
 
+export class InactiveUserError extends UserError {
+  constructor(message) {
+    super(message);
+    this.name = 'InactiveUserError';
+  }
+}
+
 export const NotFoundUserMessage = "Aucun utilisateur n'a été trouvé";
+export const InactiveUserMessage = "L'utilisateur est inactif";
